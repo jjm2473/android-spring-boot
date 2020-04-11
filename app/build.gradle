@@ -1,0 +1,87 @@
+plugins {
+    //id 'org.springframework.boot' version '1.4.4.RELEASE' apply false
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+}
+
+apply plugin: 'com.android.application'
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-starter-parent:1.4.4.RELEASE'
+    }
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.example.myapplication"
+        minSdkVersion 19
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+
+    packagingOptions {
+        merge 'META-INF/spring.factories'
+        exclude 'META-INF/spring-configuration-metadata.json'
+        exclude 'META-INF/additional-spring-configuration-metadata.json'
+        exclude 'META-INF/spring.tooling'
+        exclude 'META-INF/spring.handlers'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/web-fragment.xml'
+        exclude 'META-INF/spring.provides'
+        exclude 'META-INF/spring.schemas'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/groovy-release-info.properties'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.aspectj:aspectjrt:1.8.9'
+    implementation ("org.hibernate:hibernate-core:5.1.2.Final") {
+        exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
+    }
+    implementation ("org.hibernate:hibernate-ehcache:5.1.2.Final") {
+        exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
+    }
+    implementation "org.codehaus.groovy:groovy-templates:2.4.7"
+    implementation "javax.activation:activation:1.1"
+    implementation "javax.mail:javax.mail-api:1.5.6"
+    implementation "org.springframework:spring-context-support"
+    implementation ("org.springframework.security:spring-security-core") {
+        exclude group: 'aopalliance', module:'aopalliance'
+    }
+    implementation "org.springframework:spring-tx"
+    implementation "org.springframework:spring-websocket"
+    implementation "org.springframework:spring-orm"
+    implementation "org.apache.tomcat.embed:tomcat-embed-core"
+    implementation "com.google.code.gson:gson:2.8.5"
+    runtimeOnly "com.h2database:h2:1.4.200"
+    runtimeOnly 'mysql:mysql-connector-java:5.1.36'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation files('libs/beans.jar')
+    implementation project(path: ':mbeanserver')
+}
