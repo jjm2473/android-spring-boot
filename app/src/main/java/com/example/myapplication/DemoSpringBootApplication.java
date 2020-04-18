@@ -123,7 +123,7 @@ import java.util.Arrays;
         WebSocketAutoConfiguration.class, WebSocketMessagingAutoConfiguration.class,
         //WebServicesAutoConfiguration.class,
         CacheAutoConfiguration.class, JtaAutoConfiguration.class,
-        //HttpMessageConvertersAutoConfiguration.class,
+        HttpMessageConvertersAutoConfiguration.class,
         WebMvcAutoConfiguration.class
 },
 scanBasePackages = "com.example.myapplication")

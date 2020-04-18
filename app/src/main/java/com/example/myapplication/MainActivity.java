@@ -15,12 +15,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.startService(new Intent(this, MyService.class));
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                new MyService().onCreate();
-//            }
-//        }.start();
+//        this.startService(new Intent(this, MyService.class));
+        new Thread() {
+            @Override
+            public void run() {
+                new MyService().onCreate();
+            }
+        }.start();
     }
 }
