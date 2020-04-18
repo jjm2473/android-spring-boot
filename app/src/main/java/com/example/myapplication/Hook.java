@@ -12,12 +12,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 
 @Aspect
 @SuppressWarnings("Unused")
 public class Hook {
     private MetadataReader defaultReader =  new AndroidMetadataReader(Object.class);
+    private Map<String, Object> beanCache = new HashMap<>();
 
     @Pointcut("execution(* com.example.myapplication.MainActivity.onCreate(..))")
     public void mainCreate(){}
@@ -27,6 +30,8 @@ public class Hook {
     public void metadataByName(){}
     @Pointcut("execution(* org.springframework.core.type.classreading.SimpleMetadataReaderFactory.getMetadataReader(org.springframework.core.io.Resource))")
     public void metadataByRes(){}
+    @Pointcut("execution(* org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration.requestMappingHandlerAdapter())")
+    public void requestMappingHandlerAdapter() {}
 
     @Around("mainCreate()")
     public Object log(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -48,6 +53,21 @@ public class Hook {
     @Around("metadataByRes()")
     public Object metadataByRes(ProceedingJoinPoint joinPoint) throws Throwable {
         return getMetadataReader1((Resource)joinPoint.getArgs()[0]);
+    }
+
+    @Around("requestMappingHandlerAdapter()")
+    public Object requestMappingHandlerAdapter(ProceedingJoinPoint joinPoint) throws Throwable {
+        return getBean(joinPoint);
+    }
+
+    private Object getBean(ProceedingJoinPoint joinPoint) throws Throwable {
+        String key = joinPoint.getSignature().toString();
+        Object o = beanCache.get(key);
+        if (o == null) {
+            o = joinPoint.proceed();
+            beanCache.put(key, o);
+        }
+        return o;
     }
 
     private MetadataReader getMetadataReader0(String className) throws IOException {

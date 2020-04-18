@@ -89,7 +89,8 @@ import java.util.Arrays;
 
 @RestController
 @Configuration("org.springframework.boot.autoconfigure.internalCachingMetadataReaderFactory")
-@SpringBootApplication(exclude = {RabbitAutoConfiguration.class, BatchAutoConfiguration.class,
+@SpringBootApplication
+        (exclude = {RabbitAutoConfiguration.class, BatchAutoConfiguration.class,
         CloudAutoConfiguration.class,
         PersistenceExceptionTranslationAutoConfiguration.class,
         CassandraAutoConfiguration.class,
@@ -106,7 +107,7 @@ import java.util.Arrays;
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
         //RepositoryRestMvcAutoConfiguration.class,
         SpringDataWebAutoConfiguration.class, JestAutoConfiguration.class, //GsonAutoConfiguration.class,
-        FreeMarkerAutoConfiguration.class, JacksonAutoConfiguration.class, HypermediaAutoConfiguration.class,
+        FreeMarkerAutoConfiguration.class, //JacksonAutoConfiguration.class, HypermediaAutoConfiguration.class,
         HazelcastAutoConfiguration.class, HazelcastJpaDependencyAutoConfiguration.class,
         IntegrationAutoConfiguration.class, FlywayAutoConfiguration.class,
         DataSourceAutoConfiguration.class, JdbcTemplateAutoConfiguration.class, JndiDataSourceAutoConfiguration.class, XADataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class,
@@ -123,10 +124,9 @@ import java.util.Arrays;
         WebSocketAutoConfiguration.class, WebSocketMessagingAutoConfiguration.class,
         //WebServicesAutoConfiguration.class,
         CacheAutoConfiguration.class, JtaAutoConfiguration.class,
-        HttpMessageConvertersAutoConfiguration.class,
-        WebMvcAutoConfiguration.class
-},
-scanBasePackages = "com.example.myapplication")
+        //HttpMessageConvertersAutoConfiguration.class,
+        //WebMvcAutoConfiguration.class
+})
 public class DemoSpringBootApplication extends AndroidMetadataReaderFactory {
 
     @Bean
