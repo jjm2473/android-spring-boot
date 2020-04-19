@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.logging.LoggingSystem;
+import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 
 import javax.management.MBeanServerFactory;
 

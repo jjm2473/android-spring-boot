@@ -90,43 +90,6 @@ import java.util.Arrays;
 @RestController
 @Configuration("org.springframework.boot.autoconfigure.internalCachingMetadataReaderFactory")
 @SpringBootApplication
-        (exclude = {RabbitAutoConfiguration.class, BatchAutoConfiguration.class,
-        CloudAutoConfiguration.class,
-        PersistenceExceptionTranslationAutoConfiguration.class,
-        CassandraAutoConfiguration.class,
-        CassandraDataAutoConfiguration.class,
-        CassandraRepositoriesAutoConfiguration.class,
-        CouchbaseAutoConfiguration.class,
-        CouchbaseDataAutoConfiguration.class,
-        CouchbaseRepositoriesAutoConfiguration.class,
-        ElasticsearchAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class, ElasticsearchRepositoriesAutoConfiguration.class,
-        JpaRepositoriesAutoConfiguration.class, HibernateJpaAutoConfiguration.class,
-        MongoDataAutoConfiguration.class, MongoRepositoriesAutoConfiguration.class, EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class,
-        Neo4jDataAutoConfiguration.class, Neo4jRepositoriesAutoConfiguration.class,
-        SolrRepositoriesAutoConfiguration.class, SolrAutoConfiguration.class,
-        RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
-        //RepositoryRestMvcAutoConfiguration.class,
-        SpringDataWebAutoConfiguration.class, JestAutoConfiguration.class, //GsonAutoConfiguration.class,
-        FreeMarkerAutoConfiguration.class, //JacksonAutoConfiguration.class, HypermediaAutoConfiguration.class,
-        HazelcastAutoConfiguration.class, HazelcastJpaDependencyAutoConfiguration.class,
-        IntegrationAutoConfiguration.class, FlywayAutoConfiguration.class,
-        DataSourceAutoConfiguration.class, JdbcTemplateAutoConfiguration.class, JndiDataSourceAutoConfiguration.class, XADataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class,
-        JmxAutoConfiguration.class, JmsAutoConfiguration.class, JndiConnectionFactoryAutoConfiguration.class, ActiveMQAutoConfiguration.class, ArtemisAutoConfiguration.class,
-        HornetQAutoConfiguration.class, JerseyAutoConfiguration.class, JooqAutoConfiguration.class,
-        LiquibaseAutoConfiguration.class,
-        DeviceResolverAutoConfiguration.class, DeviceDelegatingViewResolverAutoConfiguration.class, SitePreferenceAutoConfiguration.class,
-        MustacheAutoConfiguration.class,
-        ReactorAutoConfiguration.class,
-        SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class, FallbackWebSecurityAutoConfiguration.class, OAuth2AutoConfiguration.class, SendGridAutoConfiguration.class,
-        SessionAutoConfiguration.class,
-        SocialWebAutoConfiguration.class, FacebookAutoConfiguration.class, LinkedInAutoConfiguration.class, TwitterAutoConfiguration.class,
-        VelocityAutoConfiguration.class, ThymeleafAutoConfiguration.class,
-        WebSocketAutoConfiguration.class, WebSocketMessagingAutoConfiguration.class,
-        //WebServicesAutoConfiguration.class,
-        CacheAutoConfiguration.class, JtaAutoConfiguration.class,
-        //HttpMessageConvertersAutoConfiguration.class,
-        //WebMvcAutoConfiguration.class
-})
 public class DemoSpringBootApplication extends AndroidMetadataReaderFactory {
 
     @Bean
