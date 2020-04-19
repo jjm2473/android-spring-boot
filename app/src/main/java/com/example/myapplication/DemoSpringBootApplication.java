@@ -88,9 +88,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Arrays;
 
 @RestController
-@Configuration("org.springframework.boot.autoconfigure.internalCachingMetadataReaderFactory")
 @SpringBootApplication
-public class DemoSpringBootApplication extends AndroidMetadataReaderFactory {
+public class DemoSpringBootApplication {
 
     @Bean
     public CommandLineRunner commandLineRunner(final ApplicationContext ctx) {

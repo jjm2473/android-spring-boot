@@ -1,6 +1,5 @@
 package org.springframework.context.annotation;
 
-import com.example.myapplication.AndroidMetadataReaderFactory;
 import com.example.myapplication.DelegateConfigurableListableBeanFactory;
 
 import org.springframework.beans.PropertyValues;
@@ -17,11 +16,6 @@ import java.beans.PropertyDescriptor;
 public class AndroidConfigurationClassPostProcessor extends ConfigurationClassPostProcessor {
     private static final String IMPORT_REGISTRY_BEAN_NAME =
             ConfigurationClassPostProcessor.class.getName() + ".importRegistry";
-
-    public AndroidConfigurationClassPostProcessor() {
-        super();
-        this.setMetadataReaderFactory(new AndroidMetadataReaderFactory());
-    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
