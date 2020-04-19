@@ -6,7 +6,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
+import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
@@ -14,6 +16,7 @@ import org.springframework.core.type.classreading.MetadataReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Aspect
 @SuppressWarnings("Unused")
@@ -26,6 +29,8 @@ public class Hook {
 
     @Pointcut("execution(* com.example.myapplication.MainActivity.onCreate(..))")
     public void mainCreate(){}
+    @Pointcut("execution(* org.springframework.boot.SpringApplication.run(java.lang.String...))")
+    public void springApplicationRun() {}
     @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.setResourceLoader(..))")
     public void setResourceLoader(){}
     @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.resolveBasePackage(..))")
@@ -42,6 +47,15 @@ public class Hook {
     @Around("mainCreate()")
     public Object log(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
+        return joinPoint.proceed();
+    }
+
+    @Around("springApplicationRun()")
+    public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
+        Log.d("HOOK", joinPoint.getSignature().toString());
+        SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
+        Set<Object> sources = springApplication.getSources();
+        sources.add(AndroidConfigurationClassPostProcessor.class);
         return joinPoint.proceed();
     }
 
