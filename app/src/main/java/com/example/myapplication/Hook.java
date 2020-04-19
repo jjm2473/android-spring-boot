@@ -6,24 +6,30 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 @Aspect
 @SuppressWarnings("Unused")
 public class Hook {
     private MetadataReader defaultReader =  new AndroidMetadataReader(Object.class);
+    /**
+     * 无cglib时，临时方案，缓存requestMappingHandlerAdapter
+     */
     private Map<String, Object> beanCache = new HashMap<>();
 
     @Pointcut("execution(* com.example.myapplication.MainActivity.onCreate(..))")
     public void mainCreate(){}
+    @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.setResourceLoader(..))")
+    public void setResourceLoader(){}
+    @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.resolveBasePackage(..))")
+    public void resolveBasePackage(){}
     @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.findCandidateComponents(..))")
     public void findCandidateComponents(){}
     @Pointcut("execution(* org.springframework.core.type.classreading.SimpleMetadataReaderFactory.getMetadataReader(java.lang.String))")
@@ -39,11 +45,35 @@ public class Hook {
         return joinPoint.proceed();
     }
 
+    /**
+     * {@link ClassPathScanningCandidateComponentProvider#findCandidateComponents}
+     */
     @Around("findCandidateComponents()")
     public Object findCandidateComponents(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
-        return new LinkedHashSet<BeanDefinition>();
+        return joinPoint.proceed();
     }
+
+    /**
+     * {@link ClassPathScanningCandidateComponentProvider#setResourceLoader}
+     * @return
+     */
+    @Around("setResourceLoader()")
+    public Object setResourceLoader(ProceedingJoinPoint joinPoint) throws Throwable {
+        AndroidResourcePatternResolver resourcePatternResolver = new AndroidResourcePatternResolver();
+        return joinPoint.proceed(new Object[]{resourcePatternResolver});
+    }
+
+    /**
+     *
+     * @return
+     * @see ClassPathScanningCandidateComponentProvider#resolveBasePackage(java.lang.String)
+     */
+    @Around("resolveBasePackage()")
+    public Object resolveBasePackage(ProceedingJoinPoint joinPoint) throws Throwable {
+        return "/" + ((String)joinPoint.getArgs()[0]);
+    }
+
 
     @Around("metadataByName()")
     public Object metadataByName(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -78,7 +108,7 @@ public class Hook {
             Log.e("AndroidMetadataReader", className + " not found");
             throw new IOException(e);
         } catch (NoClassDefFoundError error) {
-            Log.d("AndroidMetadataReader", className + " def error", error);
+            Log.d("AndroidMetadataReader", className + " def error");
             return defaultReader;
         }
         if ("org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration".equals(className)) {

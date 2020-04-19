@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -15,12 +16,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        this.startService(new Intent(this, MyService.class));
-        new Thread() {
-            @Override
-            public void run() {
-                new MyService().onCreate();
-            }
-        }.start();
+        this.startService(new Intent(this, MyService.class));
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                new MyService(){
+//                    @Override
+//                    public Context getApplicationContext() {
+//                        return MainActivity.this.getApplicationContext();
+//                    }
+//                }.onCreate();
+//            }
+//        }.start();
     }
 }
