@@ -27,8 +27,6 @@ public class Hook {
      */
     private Map<String, Object> beanCache = new HashMap<>();
 
-    @Pointcut("execution(* com.example.myapplication.MainActivity.onCreate(..))")
-    public void mainCreate(){}
     @Pointcut("execution(* org.springframework.boot.SpringApplication.run(java.lang.String...))")
     public void springApplicationRun() {}
     @Pointcut("execution(* org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.setResourceLoader(..))")
@@ -43,12 +41,6 @@ public class Hook {
     public void metadataByRes(){}
     @Pointcut("execution(* org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration.requestMappingHandlerAdapter())")
     public void requestMappingHandlerAdapter() {}
-
-    @Around("mainCreate()")
-    public Object log(ProceedingJoinPoint joinPoint) throws Throwable {
-        Log.d("HOOK", joinPoint.getSignature().toString());
-        return joinPoint.proceed();
-    }
 
     @Around("springApplicationRun()")
     public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {

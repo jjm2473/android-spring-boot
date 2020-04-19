@@ -75,6 +75,7 @@ dependencies {
  //   implementation "org.codehaus.groovy:groovy-templates:2.4.7"
     implementation "javax.activation:javax.activation-api:1.2.0"
     implementation "javax.mail:javax.mail-api:1.5.6"
+    // 由于aspectj无法处理Java 9的module-info，所以保持 2.2.12
     implementation "javax.xml.bind:jaxb-api:2.2.12"
     implementation "org.springframework:spring-context-support"
     implementation ("org.springframework.security:spring-security-core") {

@@ -22,6 +22,7 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         Log.d("MyService", "start spring boot");
+        System.setProperty("user.home", this.getApplicationContext().getFilesDir().getAbsolutePath());
         // disable logger
         System.setProperty(LoggingSystem.SYSTEM_PROPERTY, LoggingSystem.NONE);
         // for org.apache.tomcat.util.modeler.Registry.getMBeanServer
