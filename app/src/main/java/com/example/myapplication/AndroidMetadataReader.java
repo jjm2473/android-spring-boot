@@ -14,7 +14,7 @@ public class AndroidMetadataReader implements MetadataReader {
 
     public AndroidMetadataReader(Class<?> aClass) {
         this.annotationMetadata = new StandardAnnotationMetadata(aClass);
-        this.resource = new DescriptiveResource(aClass.getName());
+        this.resource = new DummyClassResource(aClass.getName());
     }
 
     void setAnnotationMetadata(AnnotationMetadata annotationMetadata) {
@@ -34,5 +34,22 @@ public class AndroidMetadataReader implements MetadataReader {
     @Override
     public AnnotationMetadata getAnnotationMetadata() {
         return annotationMetadata;
+    }
+
+    private static class DummyClassResource extends DescriptiveResource {
+
+        /**
+         * Create a new DescriptiveResource.
+         *
+         * @param description the resource description
+         */
+        public DummyClassResource(String description) {
+            super(description);
+        }
+
+        @Override
+        public boolean isReadable() {
+            return super.isReadable();
+        }
     }
 }
