@@ -6,11 +6,13 @@ import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 
+import java.net.MalformedURLException;
+
 public class AndroidMetadataReader implements MetadataReader {
     private AnnotationMetadata annotationMetadata;
     private Resource resource;
 
-    public AndroidMetadataReader(Class<?> aClass) {
+    public AndroidMetadataReader(Class<?> aClass) throws MalformedURLException {
         this.annotationMetadata = new StandardAnnotationMetadata(aClass);
         this.resource = new AndroidClassResource(aClass.getName());
     }

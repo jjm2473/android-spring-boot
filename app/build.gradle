@@ -1,13 +1,6 @@
 
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.android.application'
 apply plugin: 'com.hujiang.android-aspectjx'
-
-dependencyManagement {
-    imports {
-        mavenBom 'org.springframework.boot:spring-boot-starter-parent:1.4.4.RELEASE'
-    }
-}
 
 android {
     compileSdkVersion 29
@@ -42,12 +35,17 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/INDEX.LIST'
         exclude 'META-INF/groovy-release-info.properties'
+        exclude 'changelog.txt'
+        exclude 'notice.txt'
+        exclude 'license.txt'
+        exclude 'readme.txt'
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -61,8 +59,16 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.aspectj:aspectjrt:1.9.5'
+//    implementation "org.springframework:spring-beans"
+//    implementation "org.springframework:spring-context"
+//    implementation "org.springframework.boot:spring-boot-autoconfigure"
+//    implementation "org.springframework:spring-web"
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.23") {
+        exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
+    }
+//    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    implementation 'org.aspectj:aspectjrt:1.9.5'
+    implementation 'org.aspectj:aspectjweaver:1.9.5'
 //    implementation ("org.hibernate:hibernate-core:5.1.2.Final") {
 //        exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
 //    }
@@ -74,30 +80,47 @@ dependencies {
     implementation "javax.mail:javax.mail-api:1.5.6"
     // 由于aspectj无法处理Java 9的module-info，所以保持 2.2.12
     implementation "javax.xml.bind:jaxb-api:2.2.12"
-    implementation "org.springframework:spring-context-support"
-    implementation ("org.springframework.security:spring-security-core") {
-        exclude group: 'aopalliance', module:'aopalliance'
-    }
-    implementation "org.springframework:spring-tx"
-    implementation "org.springframework:spring-websocket"
-    implementation "org.springframework:spring-orm"
-    implementation "org.apache.tomcat.embed:tomcat-embed-core"
-    implementation "com.google.code.gson:gson:2.8.5"
+    implementation "xml-apis:xml-apis:1.4.01"
+    implementation 'xerces:xercesImpl:2.12.0'
+//    implementation "org.springframework:spring-context-support"
+//    implementation ("org.springframework.security:spring-security-core") {
+//        exclude group: 'aopalliance', module:'aopalliance'
+//    }
+//    implementation "org.springframework:spring-tx"
+//    implementation "org.springframework:spring-websocket"
+//    implementation "org.springframework:spring-orm"
+//    implementation "com.google.code.gson:gson:2.8.5"
     //implementation "com.h2database:h2:1.4.200"
-    implementation 'mysql:mysql-connector-java:5.1.36'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+//    implementation 'mysql:mysql-connector-java:5.1.36'
+//    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'junit:junit:4.12'
 //    testImplementation 'com.android.tools.build:gradle:3.6.2'
 //    testImplementation 'com.meituan.gradle:roboaspectj:0.9.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation files('libs/beans.jar')
     implementation project(path: ':mbeanserver')
+    implementation(project(path: ':web')) {
+        exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
+        exclude group: 'org.apache.tomcat', module: 'tomcat-juli'
+        //exclude group: 'org.aspectj', module: 'aspectjweaver'
+        //exclude group: 'org.aspectj', module: 'aspectjrt'
+        //exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
+        exclude group: 'org.codehaus.groovy', module: 'groovy'
+    }
+    //compile project(path: ':weblibrary', configuration:'default')
+
+}
+
+configurations.all {
+    exclude group:'org.aspectj', module:'aspectjrt'
 }
 
 aspectjx {
     //排除所有package路径中包含`android.support`的class文件及库（jar文件）
     exclude 'android.support'
+    exclude 'org.aspectj.weaver'
+    exclude 'org.springframework.http'
+    exclude 'org.h2'
     //exclude 'org/h2/*'
     //ajcArgs '-Xlint:warning'
 }

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.test.demo.Application;
+
 import org.springframework.boot.logging.LoggingSystem;
 
 import javax.management.MBeanServerFactory;
@@ -22,12 +24,13 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         Log.d("MyService", "start spring boot");
+        AndroidClassResource.setSourceDir(getApplicationContext().getApplicationInfo().sourceDir);
         System.setProperty("user.home", this.getApplicationContext().getFilesDir().getAbsolutePath());
         // disable logger
         System.setProperty(LoggingSystem.SYSTEM_PROPERTY, LoggingSystem.NONE);
         // for org.apache.tomcat.util.modeler.Registry.getMBeanServer
         MBeanServerFactory.createMBeanServer();
-        DemoSpringBootApplication.main(new String[0]);
+        Application.main(new String[0]);
     }
 
     @Override

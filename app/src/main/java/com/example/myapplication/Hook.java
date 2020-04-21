@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,9 @@ public class Hook {
      * 无cglib时，临时方案，缓存requestMappingHandlerAdapter
      */
     private Map<String, Object> beanCache = new HashMap<>();
+
+    public Hook() throws MalformedURLException {
+    }
 
     @Pointcut("execution(* org.springframework.boot.SpringApplication.run(java.lang.String...))")
     public void springApplicationRun() {}
@@ -41,11 +45,14 @@ public class Hook {
     public void metadataByRes(){}
     @Pointcut("execution(* org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration.requestMappingHandlerAdapter())")
     public void requestMappingHandlerAdapter() {}
+    @Pointcut("execution(* org.springframework.context.support.GenericApplicationContext.getResources(java.lang.String))")
+    public void appGetResources(){}
 
     @Around("springApplicationRun()")
     public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
         SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
+        springApplication.setResourceLoader(new AndroidResourcePatternResolver(Hook.class.getClassLoader()));
         Set<Object> sources = springApplication.getSources();
         sources.add(AndroidConfigurationClassPostProcessor.class);
         return joinPoint.proceed();
@@ -54,7 +61,7 @@ public class Hook {
     /**
      * {@link ClassPathScanningCandidateComponentProvider#findCandidateComponents}
      */
-    @Around("findCandidateComponents()")
+    //@Around("findCandidateComponents()")
     public Object findCandidateComponents(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
         return joinPoint.proceed();
@@ -64,9 +71,9 @@ public class Hook {
      * {@link ClassPathScanningCandidateComponentProvider#setResourceLoader}
      * @return
      */
-    @Around("setResourceLoader()")
+//    @Around("setResourceLoader()")
     public Object setResourceLoader(ProceedingJoinPoint joinPoint) throws Throwable {
-        AndroidResourcePatternResolver resourcePatternResolver = new AndroidResourcePatternResolver();
+        AndroidResourcePatternResolver resourcePatternResolver = new AndroidResourcePatternResolver(Hook.class.getClassLoader());
         return joinPoint.proceed(new Object[]{resourcePatternResolver});
     }
 
@@ -75,12 +82,28 @@ public class Hook {
      * @return
      * @see ClassPathScanningCandidateComponentProvider#resolveBasePackage(java.lang.String)
      */
-    @Around("resolveBasePackage()")
+//    @Around("resolveBasePackage()")
     public Object resolveBasePackage(ProceedingJoinPoint joinPoint) throws Throwable {
         return "/" + ((String)joinPoint.getArgs()[0]);
     }
 
+    /**
+     * {@link org.springframework.context.support.GenericApplicationContext#getResources}
+     * @return
+     */
+//    @Around("appGetResources()")
+    public Object appGetResources(ProceedingJoinPoint joinPoint) throws Throwable {
+        String locationPattern = (String) joinPoint.getArgs()[0];
+        AndroidResourcePatternResolver resourcePatternResolver = new AndroidResourcePatternResolver(Hook.class.getClassLoader());
+        return resourcePatternResolver.getResources(locationPattern);
+    }
 
+    /**
+     * {@link org.springframework.core.type.classreading.SimpleMetadataReaderFactory#getMetadataReader(java.lang.String)}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
     @Around("metadataByName()")
     public Object metadataByName(ProceedingJoinPoint joinPoint) throws Throwable {
         return getMetadataReader0((String)joinPoint.getArgs()[0]);
@@ -112,7 +135,7 @@ public class Hook {
             metadataReader = new AndroidMetadataReader(Class.forName(className));
         } catch (ClassNotFoundException e) {
             Log.e("AndroidMetadataReader", className + " not found");
-            throw new IOException(e);
+            return defaultReader;
         } catch (NoClassDefFoundError error) {
             Log.d("AndroidMetadataReader", className + " def error");
             return defaultReader;
