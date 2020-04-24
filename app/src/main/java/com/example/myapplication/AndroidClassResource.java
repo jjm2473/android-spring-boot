@@ -1,14 +1,21 @@
 package com.example.myapplication;
 
+import androidx.annotation.Nullable;
+
 import org.springframework.core.io.DescriptiveResource;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import dalvik.system.DexFile;
 
 public class AndroidClassResource extends DescriptiveResource {
     private static String sourceDir;
     private static String filePrefix;
+    private static ClassLoader classLoader;
 
     public static String getSourceDir() {
         return sourceDir;
@@ -18,9 +25,20 @@ public class AndroidClassResource extends DescriptiveResource {
         return filePrefix;
     }
 
+    public static List<String> getClasses(@Nullable String prefix) throws IOException {
+        PackageClassCollector collector = new PackageClassCollector(prefix);
+        try {
+            AndroidClassesScanner.classes(classLoader, collector);
+            return collector.getCollection();
+        } catch (Exception e) {
+            throw new IOException("scan classes failed", e);
+        }
+    }
+
     public static void setSourceDir(String sourceDir) {
         AndroidClassResource.sourceDir = sourceDir;
         AndroidClassResource.filePrefix = "file:"+sourceDir+"!/";
+        AndroidClassResource.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
     private URL url;
@@ -51,5 +69,27 @@ public class AndroidClassResource extends DescriptiveResource {
     @Override
     public int hashCode() {
         return url.hashCode();
+    }
+
+
+    private static class PackageClassCollector implements AndroidClassesScanner.Consumer {
+        private String prefix;
+        private List<String> collection;
+
+        private PackageClassCollector(String prefix) {
+            this.prefix = prefix;
+            this.collection = new ArrayList<>();
+        }
+
+        @Override
+        public void accept(DexFile dexFile, String className) {
+            if (prefix == null || className.startsWith(prefix)) {
+                collection.add(className);
+            }
+        }
+
+        private List<String> getCollection() {
+            return collection;
+        }
     }
 }

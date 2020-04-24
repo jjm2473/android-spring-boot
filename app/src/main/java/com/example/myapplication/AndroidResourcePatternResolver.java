@@ -8,26 +8,20 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import dalvik.system.DexFile;
-
 public class AndroidResourcePatternResolver extends PathMatchingResourcePatternResolver {
 
-    private ClassLoader classLoader;
     private Set<String> entries;
 
     public AndroidResourcePatternResolver(ClassLoader classLoader) throws IOException {
         super(new AndroidResourceLoader(classLoader));
-        this.classLoader = classLoader;
         Set<String> entries0 = new LinkedHashSet<>(64);
         try (JarFile jarFile = new JarFile(AndroidClassResource.getSourceDir())) {
             Enumeration<JarEntry> entries = jarFile.entries();
@@ -77,36 +71,9 @@ public class AndroidResourcePatternResolver extends PathMatchingResourcePatternR
                 ret.add(new UrlResource(new URL("jar", null, AndroidClassResource.getFilePrefix()+name)));
             }
         }
-        PackageClassCollector collector = new PackageClassCollector(path.replace('/', '.'));
-        try {
-            AndroidClassesScanner.classes(classLoader, collector);
-        } catch (Exception e) {
-            throw new IOException("scan classes failed", e);
-        }
-        for (String cls:collector.getCollection()) {
+        for (String cls:AndroidClassResource.getClasses(path.replace('/', '.'))) {
             ret.add(new AndroidClassResource(cls));
         }
         return ret;
-    }
-
-    private static class PackageClassCollector implements AndroidClassesScanner.Consumer {
-        private String prefix;
-        private List<String> collection;
-
-        public PackageClassCollector(String prefix) {
-            this.prefix = prefix;
-            this.collection = new ArrayList<>();
-        }
-
-        @Override
-        public void accept(DexFile dexFile, String className) {
-            if (className.startsWith(prefix)) {
-                collection.add(className);
-            }
-        }
-
-        public List<String> getCollection() {
-            return collection;
-        }
     }
 }

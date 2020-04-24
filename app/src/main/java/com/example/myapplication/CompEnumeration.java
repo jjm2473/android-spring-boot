@@ -3,7 +3,7 @@ package com.example.myapplication;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-public class CompEnumeration<T> implements Enumeration<T>,Iterator<T> {
+public class CompEnumeration<T> implements IteratorEnumeration<T> {
     private Iterator<Enumeration<T>> iterator;
     private Enumeration<T> current;
 

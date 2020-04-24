@@ -14,7 +14,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +50,8 @@ public class Hook {
     public void requestMappingHandlerAdapter() {}
     @Pointcut("execution(* org.springframework.context.support.GenericApplicationContext.getResources(java.lang.String))")
     public void appGetResources(){}
+    @Pointcut("execution(* org.hibernate.boot.archive.internal.JarFileBasedArchiveDescriptor.resolveJarFileReference())")
+    public void resolveJarFileReference(){}
 
     @Around("springApplicationRun()")
     public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -119,6 +124,16 @@ public class Hook {
         return getBean(joinPoint);
     }
 
+    @Around("resolveJarFileReference()")
+    public Object resolveJarFileReference(ProceedingJoinPoint joinPoint) throws Throwable {
+        String file = getArchiveUrl(joinPoint.getThis()).getFile();
+        if (AndroidClassResource.getSourceDir().equals(file)) {
+            return new ApkFile(file);
+        } else {
+            return joinPoint.proceed();
+        }
+    }
+
     private Object getBean(ProceedingJoinPoint joinPoint) throws Throwable {
         String key = joinPoint.getSignature().toString();
         Object o = beanCache.get(key);
@@ -140,6 +155,7 @@ public class Hook {
             Log.d("AndroidMetadataReader", className + " def error");
             return defaultReader;
         }
+        // 创建临时文件夹避免tomcat搜索文档根目录
         if ("org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration".equals(className)) {
             metadataReader.setAnnotationMetadata(new AnnotationMetadataProxy(metadataReader.getAnnotationMetadata()) {
                 @Override
@@ -159,5 +175,19 @@ public class Hook {
 
     private MetadataReader getMetadataReader1(Resource resource) throws IOException {
         return getMetadataReader0(resource.getDescription());
+    }
+
+    /**
+     * {@link org.hibernate.boot.archive.spi.AbstractArchiveDescriptor#getArchiveUrl}
+     * @param obj
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    private static URL getArchiveUrl(Object obj) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
+        Method getArchiveUrl = Class.forName("org.hibernate.boot.archive.spi.AbstractArchiveDescriptor").getDeclaredMethod("getArchiveUrl");
+        getArchiveUrl.setAccessible(true);
+        return (URL) getArchiveUrl.invoke(obj);
     }
 }
