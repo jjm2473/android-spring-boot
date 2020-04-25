@@ -13,9 +13,15 @@ import dalvik.system.DexFile;
 
 @SuppressLint("ObsoleteSdkInt")
 public class AndroidClassesScanner {
+    private static final Class baseDexClassLoaderClass;
     private static final DexGetter dexGetter;
 
     static {
+        try {
+            baseDexClassLoaderClass = Class.forName("dalvik.system.BaseDexClassLoader");
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError();
+        }
         if (Build.VERSION.SDK_INT >= 19) {
             dexGetter = new V19();
         } else if (Build.VERSION.SDK_INT >= 14) {
@@ -30,11 +36,22 @@ public class AndroidClassesScanner {
     }
 
     public static void classes(ClassLoader loader, Consumer consumer) throws NoSuchFieldException, IllegalAccessException {
-        for (DexFile dexFile:dexs(loader)) {
-            Enumeration<String> entries = dexFile.entries();
-            while (entries.hasMoreElements()) {
-                consumer.accept(dexFile, entries.nextElement());
+        try {
+            ClassLoader current = loader;
+            while (current != null) {
+//                "java.lang.BootClassLoader".equals(current.getClass().getName())
+                if (baseDexClassLoaderClass.isInstance(current)) {
+                    for (DexFile dexFile : dexs(current)) {
+                        Enumeration<String> entries = dexFile.entries();
+                        while (entries.hasMoreElements()) {
+                            consumer.accept(dexFile, entries.nextElement());
+                        }
+                    }
+                }
+                current = current.getParent();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

@@ -12,6 +12,7 @@ import org.springframework.boot.logging.LoggingSystem;
 import javax.management.MBeanServerFactory;
 
 public class MyService extends Service {
+    private static final String TAG = "MyService";
     public MyService() {
     }
 
@@ -23,8 +24,12 @@ public class MyService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("MyService", "start spring boot");
-        AndroidClassResource.setSourceDir(getApplicationContext().getApplicationInfo().sourceDir);
+        Log.d(TAG, "start spring boot");
+        try {
+            Hook.init(getApplicationContext());
+        } catch (Exception e) {
+            Log.e(TAG, "Hook init failed", e);
+        }
         System.setProperty("user.home", this.getApplicationContext().getFilesDir().getAbsolutePath());
         // disable logger
         System.setProperty(LoggingSystem.SYSTEM_PROPERTY, LoggingSystem.NONE);

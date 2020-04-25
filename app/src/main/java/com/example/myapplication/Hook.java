@@ -1,6 +1,13 @@
 package com.example.myapplication;
 
+import android.content.Context;
 import android.util.Log;
+
+import com.android.dx.DexMaker;
+import com.android.dx.TypeId;
+import com.example.myapplication.dx.OverDexMaker;
+import com.example.myapplication.scan.ApkEntry;
+import com.example.myapplication.scan.ApkFile;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -8,19 +15,28 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
+import org.springframework.cglib.proxy.DexEnhancer;
 import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
+import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javassist.bytecode.ClassFile;
 
 @Aspect
 @SuppressWarnings("Unused")
@@ -52,12 +68,20 @@ public class Hook {
     public void appGetResources(){}
     @Pointcut("execution(* org.hibernate.boot.archive.internal.JarFileBasedArchiveDescriptor.resolveJarFileReference())")
     public void resolveJarFileReference(){}
+    @Pointcut("execution(void javassist.bytecode.ClassFile.read(java.io.DataInputStream))")
+    public void classFileRead(){}
 
+    /**
+     * {@link org.springframework.boot.SpringApplication#run}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
     @Around("springApplicationRun()")
     public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
         SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
-        springApplication.setResourceLoader(new AndroidResourcePatternResolver(Hook.class.getClassLoader()));
+        springApplication.setResourceLoader(new AndroidResourcePatternResolver(AndroidClassResource.getClassLoader()));
         Set<Object> sources = springApplication.getSources();
         sources.add(AndroidConfigurationClassPostProcessor.class);
         return joinPoint.proceed();
@@ -134,6 +158,30 @@ public class Hook {
         }
     }
 
+    /**
+     * {@link javassist.bytecode.ClassFile#read}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("classFileRead()")
+    public void classFileRead(ProceedingJoinPoint joinPoint) throws Throwable {
+        ClassFile file = (ClassFile) joinPoint.getThis();
+        DataInputStream dis = (DataInputStream) joinPoint.getArgs()[0];
+        InputStream remain = ApkEntry.judge(dis);
+        if (remain == null) {
+            String clz = ApkEntry.read(dis);
+            Field thisclassname = ClassFile.class.getDeclaredField("thisclassname");
+            thisclassname.setAccessible(true);
+            thisclassname.set(file, clz);
+            Field attributes = ClassFile.class.getDeclaredField("attributes");
+            attributes.setAccessible(true);
+            attributes.set(file, new ArrayList<>());
+        } else {
+            joinPoint.proceed(new Object[]{remain});
+        }
+    }
+
     private Object getBean(ProceedingJoinPoint joinPoint) throws Throwable {
         String key = joinPoint.getSignature().toString();
         Object o = beanCache.get(key);
@@ -189,5 +237,24 @@ public class Hook {
         Method getArchiveUrl = Class.forName("org.hibernate.boot.archive.spi.AbstractArchiveDescriptor").getDeclaredMethod("getArchiveUrl");
         getArchiveUrl.setAccessible(true);
         return (URL) getArchiveUrl.invoke(obj);
+    }
+
+    private static final String EnhancerClass = "org.springframework.cglib.proxy.Enhancer";
+
+    public static ClassLoader init(Context context) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        File dexCacheDir = new File(context.getDir("dexfiles", Context.MODE_PRIVATE).getAbsolutePath());
+        DexEnhancer.setDexCacheDir(dexCacheDir);
+        String superClsName = DexEnhancer.class.getName().replace(".", "/");
+        String subClsName = EnhancerClass.replace(".", "/");
+
+        TypeId<?> superType = TypeId.get("L" + superClsName + ";");
+        TypeId<?> subType = TypeId.get("L" + subClsName + ";");
+
+        OverDexMaker dexMaker = new OverDexMaker();
+        dexMaker.declare(subType, subClsName, Modifier.PUBLIC, superType);
+        ClassLoader loader = dexMaker.generateAndLoad(DexEnhancer.class.getClassLoader(), dexCacheDir);
+        AndroidClassResource.setSourceDir(context.getApplicationInfo().sourceDir, loader);
+        loader.loadClass(EnhancerClass).newInstance();
+        return loader;
     }
 }

@@ -66,6 +66,8 @@ dependencies {
     implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.23") {
         exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
     }
+    implementation 'org.javassist:javassist'
+    implementation 'com.linkedin.dexmaker:dexmaker:2.25.1'
 //    implementation 'org.springframework.boot:spring-boot-starter-web'
 //    implementation 'org.aspectj:aspectjrt:1.9.5'
     implementation 'org.aspectj:aspectjweaver:1.9.5'

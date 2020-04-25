@@ -25,6 +25,10 @@ public class AndroidClassResource extends DescriptiveResource {
         return filePrefix;
     }
 
+    public static ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
     public static List<String> getClasses(@Nullable String prefix) throws IOException {
         PackageClassCollector collector = new PackageClassCollector(prefix);
         try {
@@ -35,10 +39,10 @@ public class AndroidClassResource extends DescriptiveResource {
         }
     }
 
-    public static void setSourceDir(String sourceDir) {
+    public static void setSourceDir(String sourceDir, ClassLoader classLoader) {
         AndroidClassResource.sourceDir = sourceDir;
         AndroidClassResource.filePrefix = "file:"+sourceDir+"!/";
-        AndroidClassResource.classLoader = Thread.currentThread().getContextClassLoader();
+        AndroidClassResource.classLoader = classLoader;
     }
 
     private URL url;
