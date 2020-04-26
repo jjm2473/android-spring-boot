@@ -3,7 +3,9 @@ package com.example.myapplication;
 import android.content.Context;
 import android.util.Log;
 
+import com.android.dx.Code;
 import com.android.dx.DexMaker;
+import com.android.dx.Local;
 import com.android.dx.TypeId;
 import com.example.myapplication.dx.OverDexMaker;
 import com.example.myapplication.scan.ApkEntry;
@@ -252,6 +254,10 @@ public class Hook {
 
         OverDexMaker dexMaker = new OverDexMaker();
         dexMaker.declare(subType, subClsName, Modifier.PUBLIC, superType);
+        Code code = dexMaker.declare(subType.getConstructor(), Modifier.PUBLIC);
+        Local thisRef = code.getThis(subType);
+        code.invokeDirect(superType.getConstructor(), null, thisRef);
+        code.returnVoid();
         ClassLoader loader = dexMaker.generateAndLoad(DexEnhancer.class.getClassLoader(), dexCacheDir);
         AndroidClassResource.setSourceDir(context.getApplicationInfo().sourceDir, loader);
         loader.loadClass(EnhancerClass).newInstance();

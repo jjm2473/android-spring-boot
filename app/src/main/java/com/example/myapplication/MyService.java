@@ -29,6 +29,8 @@ public class MyService extends Service {
             Hook.init(getApplicationContext());
         } catch (Exception e) {
             Log.e(TAG, "Hook init failed", e);
+            this.stopSelf();
+            return;
         }
         System.setProperty("user.home", this.getApplicationContext().getFilesDir().getAbsolutePath());
         // disable logger
