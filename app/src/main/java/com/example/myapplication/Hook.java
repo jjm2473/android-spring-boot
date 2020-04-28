@@ -4,12 +4,13 @@ import android.content.Context;
 import android.util.Log;
 
 import com.android.dx.Code;
-import com.android.dx.DexMaker;
 import com.android.dx.Local;
 import com.android.dx.TypeId;
+import com.example.myapplication.dx.Dx;
 import com.example.myapplication.dx.OverDexMaker;
 import com.example.myapplication.scan.ApkEntry;
 import com.example.myapplication.scan.ApkFile;
+import com.example.myapplication.util.FileUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -17,7 +18,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
-import org.springframework.cglib.proxy.DexEnhancer;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
@@ -25,6 +26,7 @@ import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -72,6 +74,8 @@ public class Hook {
     public void resolveJarFileReference(){}
     @Pointcut("execution(void javassist.bytecode.ClassFile.read(java.io.DataInputStream))")
     public void classFileRead(){}
+    @Pointcut("execution(java.lang.Class org.springframework.cglib.core.ReflectUtils.defineClass(java.lang.String, byte[], java.lang.ClassLoader, java.security.ProtectionDomain))")
+    public void defineClass(){}
 
     /**
      * {@link org.springframework.boot.SpringApplication#run}
@@ -184,6 +188,22 @@ public class Hook {
         }
     }
 
+    /**
+     * {@link ReflectUtils#defineClass(java.lang.String, byte[], java.lang.ClassLoader, java.security.ProtectionDomain)}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("defineClass()")
+    public Object defineClass(ProceedingJoinPoint joinPoint) throws Throwable {
+        String className = (String) joinPoint.getArgs()[0];
+        ClassLoader classLoader = (ClassLoader) joinPoint.getArgs()[2];
+        Dx dx = new Dx();
+        dx.addClass((byte[])joinPoint.getArgs()[1], className);
+        dx.setSharedClassLoader(classLoader);
+        return dx.generateAndLoad(classLoader, null).loadClass(className);
+    }
+
     private Object getBean(ProceedingJoinPoint joinPoint) throws Throwable {
         String key = joinPoint.getSignature().toString();
         Object o = beanCache.get(key);
@@ -243,24 +263,39 @@ public class Hook {
 
     private static final String EnhancerClass = "org.springframework.cglib.proxy.Enhancer";
 
+    private static void cleanCache(Context context) throws IOException {
+        for (File f:context.getCacheDir().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("tomcat");
+            }
+        })) {
+            FileUtils.rm(f);
+        }
+    }
+
+//    private Class proxyEnhancer(File dexCacheDir) throws IOException, ClassNotFoundException {
+//        String superClsName = DexEnhancer.class.getName().replace(".", "/");
+//        String subClsName = EnhancerClass.replace(".", "/");
+//
+//        TypeId<?> superType = TypeId.get("L" + superClsName + ";");
+//        TypeId<?> subType = TypeId.get("L" + subClsName + ";");
+//
+//        OverDexMaker dexMaker = new OverDexMaker();
+//        dexMaker.declare(subType, subClsName, Modifier.PUBLIC, superType);
+//        Code code = dexMaker.declare(subType.getConstructor(), Modifier.PUBLIC);
+//        Local thisRef = code.getThis(subType);
+//        code.invokeDirect(superType.getConstructor(), null, thisRef);
+//        code.returnVoid();
+//        ClassLoader loader = dexMaker.generateAndLoad(DexEnhancer.class.getClassLoader(), dexCacheDir);
+//        return loader.loadClass(EnhancerClass);
+//    }
+
     public static ClassLoader init(Context context) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        File dexCacheDir = new File(context.getDir("dexfiles", Context.MODE_PRIVATE).getAbsolutePath());
-        DexEnhancer.setDexCacheDir(dexCacheDir);
-        String superClsName = DexEnhancer.class.getName().replace(".", "/");
-        String subClsName = EnhancerClass.replace(".", "/");
-
-        TypeId<?> superType = TypeId.get("L" + superClsName + ";");
-        TypeId<?> subType = TypeId.get("L" + subClsName + ";");
-
-        OverDexMaker dexMaker = new OverDexMaker();
-        dexMaker.declare(subType, subClsName, Modifier.PUBLIC, superType);
-        Code code = dexMaker.declare(subType.getConstructor(), Modifier.PUBLIC);
-        Local thisRef = code.getThis(subType);
-        code.invokeDirect(superType.getConstructor(), null, thisRef);
-        code.returnVoid();
-        ClassLoader loader = dexMaker.generateAndLoad(DexEnhancer.class.getClassLoader(), dexCacheDir);
+        cleanCache(context);
+        Dx.init(new File(context.getDir("tmpdexfiles", Context.MODE_PRIVATE).getAbsolutePath()));
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
         AndroidClassResource.setSourceDir(context.getApplicationInfo().sourceDir, loader);
-        loader.loadClass(EnhancerClass).newInstance();
         return loader;
     }
 }

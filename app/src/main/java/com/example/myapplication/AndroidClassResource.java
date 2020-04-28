@@ -29,6 +29,12 @@ public class AndroidClassResource extends DescriptiveResource {
         return classLoader;
     }
 
+    /**
+     * 包名
+     * @param prefix
+     * @return
+     * @throws IOException
+     */
     public static List<String> getClasses(@Nullable String prefix) throws IOException {
         PackageClassCollector collector = new PackageClassCollector(prefix);
         try {
