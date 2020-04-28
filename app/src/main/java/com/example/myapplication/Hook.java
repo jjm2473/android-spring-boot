@@ -88,8 +88,8 @@ public class Hook {
         Log.d("HOOK", joinPoint.getSignature().toString());
         SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
         springApplication.setResourceLoader(new AndroidResourcePatternResolver(AndroidClassResource.getClassLoader()));
-        Set<Object> sources = springApplication.getSources();
-        sources.add(AndroidConfigurationClassPostProcessor.class);
+//        Set<Object> sources = springApplication.getSources();
+//        sources.add(AndroidConfigurationClassPostProcessor.class);
         return joinPoint.proceed();
     }
 
@@ -149,7 +149,7 @@ public class Hook {
         return getMetadataReader1((Resource)joinPoint.getArgs()[0]);
     }
 
-    @Around("requestMappingHandlerAdapter()")
+    //@Around("requestMappingHandlerAdapter()")
     public Object requestMappingHandlerAdapter(ProceedingJoinPoint joinPoint) throws Throwable {
         return getBean(joinPoint);
     }

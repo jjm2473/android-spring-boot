@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.test.demo.Application;
+
+import com.example.simple_web.Application;
 
 import org.springframework.boot.logging.LoggingSystem;
 

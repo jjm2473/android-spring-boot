@@ -1,0 +1,9 @@
+apply plugin: 'java-library'
+
+dependencies {
+    api("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-devtools")
+}
+
+sourceCompatibility = "8"
+targetCompatibility = "8"
