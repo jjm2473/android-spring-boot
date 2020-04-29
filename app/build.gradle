@@ -68,6 +68,8 @@ dependencies {
     implementation "javax.mail:javax.mail-api:1.5.6"
     // 由于aspectj无法处理Java 9的module-info，所以保持 2.2.12
     implementation "javax.xml.bind:jaxb-api:2.2.12"
+    implementation "xml-apis:xml-apis:1.4.01"
+    implementation 'xerces:xercesImpl:2.12.0'
     implementation "org.springframework:spring-context-support"
     implementation ("org.springframework.security:spring-security-core") {
         exclude group: 'aopalliance', module:'aopalliance'
