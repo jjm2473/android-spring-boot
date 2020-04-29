@@ -1,13 +1,6 @@
 
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.android.application'
 apply plugin: 'com.hujiang.android-aspectjx'
-
-dependencyManagement {
-    imports {
-        mavenBom 'org.springframework.boot:spring-boot-starter-parent:1.4.4.RELEASE'
-    }
-}
 
 android {
     compileSdkVersion 29
@@ -86,7 +79,7 @@ dependencies {
     implementation "com.google.code.gson:gson:2.8.5"
     //implementation "com.h2database:h2:1.4.200"
     implementation 'mysql:mysql-connector-java:5.1.36'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+//    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'junit:junit:4.12'
 //    testImplementation 'com.android.tools.build:gradle:3.6.2'
 //    testImplementation 'com.meituan.gradle:roboaspectj:0.9.1'
@@ -94,6 +87,15 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation files('libs/beans.jar')
     implementation project(path: ':mbeanserver')
+    implementation(project(path: ':simple-web')) {
+        exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
+        exclude group: 'org.apache.tomcat', module: 'tomcat-juli'
+        //exclude group: 'org.aspectj', module: 'aspectjweaver'
+        //exclude group: 'org.aspectj', module: 'aspectjrt'
+        //exclude group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.1-api'
+        exclude group: 'org.codehaus.groovy', module: 'groovy'
+    }
+
 }
 
 aspectjx {

@@ -1,6 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    
+    ext.springVersion = '1.4.4.RELEASE'
+
     repositories {
         google()
         jcenter()
@@ -17,12 +18,21 @@ buildscript {
 }
 
 allprojects {
+    apply plugin: 'io.spring.dependency-management'
+
     repositories {
         google()
         jcenter()
         mavenCentral()
         mavenLocal()
     }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-starter-parent:${springVersion}"
+        }
+    }
+
 }
 
 task clean(type: Delete) {
