@@ -83,7 +83,13 @@ dependencies {
     implementation "org.springframework:spring-tx"
     implementation "org.springframework:spring-websocket"
     implementation "org.springframework:spring-orm"
-    implementation "org.apache.tomcat.embed:tomcat-embed-core"
+    // javax.annotation.PostConstruct ...
+    implementation "javax.annotation:jsr250-api:1.0"
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.23") {
+        // javax.persistence.PersistenceContext conflict with hibernate-jpa-2.1-api
+        // javax.annotation.PostConstruct conflict with jsr250-api
+        exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
+    }
     implementation "com.google.code.gson:gson:2.8.5"
     //implementation "com.h2database:h2:1.4.200"
     implementation 'mysql:mysql-connector-java:5.1.36'
@@ -108,11 +114,15 @@ dependencies {
 
 configurations.all {
     exclude group:'org.aspectj', module:'aspectjrt'
+    exclude group:'org.apache.tomcat', module:'tomcat-annotations-api'
 }
 
 aspectjx {
     //排除所有package路径中包含`android.support`的class文件及库（jar文件）
     exclude 'android.support'
+    exclude 'org.aspectj.weaver'
+    exclude 'org.springframework.http'
+    exclude 'org.h2'
     //exclude 'org/h2/*'
     //ajcArgs '-Xlint:warning'
 }
