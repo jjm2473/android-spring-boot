@@ -18,6 +18,7 @@ import com.example.myapplication.scan.Config;
 import com.example.myapplication.util.FileUtils;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.xerces.jaxp.SAXParserFactoryImpl;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -95,7 +96,8 @@ public class Hook {
     public void newDefaultMethodInvokingMethodInterceptor(){}
     @Pointcut("execution(java.lang.Object org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(org.aopalliance.intercept.MethodInvocation))")
     public void invokeDefaultMethodInvokingMethodInterceptor(){}
-
+    @Pointcut("call(javax.xml.parsers.SAXParserFactory javax.xml.parsers.SAXParserFactory.newInstance())")
+    public void callSAXParserFactoryNew(){}
     /**
      * {@link org.springframework.boot.SpringApplication#run}
      * @param joinPoint
@@ -284,6 +286,17 @@ public class Hook {
                 constructor.newInstance(declaringClass) :
                 constructor.newInstance(declaringClass, (MethodHandles.Lookup.PUBLIC | MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED | MethodHandles.Lookup.PACKAGE)));
         return lookup.unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(arguments);
+    }
+
+    /**
+     * {@link javax.xml.parsers.SAXParserFactory#newInstance}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("callSAXParserFactoryNew()")
+    public Object callSAXParserFactoryNew(ProceedingJoinPoint joinPoint) throws Throwable {
+        return new SAXParserFactoryImpl();
     }
 
     private Class defineClass(ClassLoader classLoader, String className, byte[] bytecode) throws IOException, ClassNotFoundException {
