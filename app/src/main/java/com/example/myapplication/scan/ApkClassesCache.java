@@ -14,7 +14,7 @@ class ApkClassesCache {
     static Map<String, ApkEntry> clzMap;
     static {
         try {
-            List<String> classes = AndroidClassResource.getClasses(null);
+            List<String> classes = AndroidClassResource.getClasses(Config.basePackage);
             clzEntries = new ArrayList<>(classes.size());
             clzMap = new HashMap<>(classes.size());
             for (String clz : classes) {

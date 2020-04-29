@@ -6,7 +6,9 @@ import android.os.IBinder;
 import android.util.Log;
 
 
-import com.example.simple_web.Application;
+//import com.example.simple_web.Application;
+
+import com.test.demo.Application;
 
 import org.springframework.boot.logging.LoggingSystem;
 

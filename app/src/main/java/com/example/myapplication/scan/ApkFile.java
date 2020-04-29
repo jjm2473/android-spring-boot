@@ -67,6 +67,7 @@ public class ApkFile extends JarFile {
     }
 
     private IteratorEnumeration<JarEntry> mergedEntries() {
+//        return new IteratorToEnumeration<>(ApkClassesCache.clzEntries.iterator());
         return new CompEnumeration<>(Arrays.asList(super.entries(), new IteratorToEnumeration<>(ApkClassesCache.clzEntries.iterator())));
     }
 }
