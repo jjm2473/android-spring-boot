@@ -1,6 +1,10 @@
 package com.example.myapplication;
 
+import android.content.Context;
 import android.util.Log;
+
+import com.example.myapplication.dx.Dx;
+import com.example.myapplication.util.FileUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -8,11 +12,14 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +48,10 @@ public class Hook {
     public void metadataByRes(){}
     @Pointcut("execution(* org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration.requestMappingHandlerAdapter())")
     public void requestMappingHandlerAdapter() {}
+    @Pointcut("execution(java.lang.Class org.springframework.cglib.core.ReflectUtils.defineClass(java.lang.String, byte[], java.lang.ClassLoader, java.security.ProtectionDomain))")
+    public void defineClass(){}
 
-    @Around("springApplicationRun()")
+    //@Around("springApplicationRun()")//无cglib时启用
     public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
         Log.d("HOOK", joinPoint.getSignature().toString());
         SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
@@ -91,9 +100,25 @@ public class Hook {
         return getMetadataReader1((Resource)joinPoint.getArgs()[0]);
     }
 
-    @Around("requestMappingHandlerAdapter()")
+    //@Around("requestMappingHandlerAdapter()")//无cglib时启用
     public Object requestMappingHandlerAdapter(ProceedingJoinPoint joinPoint) throws Throwable {
         return getBean(joinPoint);
+    }
+
+    /**
+     * {@link ReflectUtils#defineClass(java.lang.String, byte[], java.lang.ClassLoader, java.security.ProtectionDomain)}
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("defineClass()")
+    public Object defineClass(ProceedingJoinPoint joinPoint) throws Throwable {
+        String className = (String) joinPoint.getArgs()[0];
+        ClassLoader classLoader = (ClassLoader) joinPoint.getArgs()[2];
+        Dx dx = new Dx();
+        dx.addClass((byte[])joinPoint.getArgs()[1], className);
+        dx.setSharedClassLoader(classLoader);
+        return dx.generateAndLoad(classLoader, null).loadClass(className);
     }
 
     private Object getBean(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -137,4 +162,24 @@ public class Hook {
     private MetadataReader getMetadataReader1(Resource resource) throws IOException {
         return getMetadataReader0(resource.getDescription());
     }
+
+    private static void cleanCache(Context context) throws IOException {
+        for (File f:context.getCacheDir().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("tomcat");
+            }
+        })) {
+            FileUtils.rm(f);
+        }
+    }
+
+    public static ClassLoader init(Context context) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        cleanCache(context);
+        Dx.init(new File(context.getDir("tmpdexfiles", Context.MODE_PRIVATE).getAbsolutePath()));
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        //AndroidClassResource.setSourceDir(context.getApplicationInfo().sourceDir, loader);
+        return loader;
+    }
+
 }
