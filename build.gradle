@@ -9,7 +9,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.2'
+        classpath 'com.android.tools.build:gradle:3.6.3'
         classpath 'com.hujiang.aspectjx:gradle-android-plugin-aspectjx:2.0.10'
         classpath "io.spring.gradle:dependency-management-plugin:1.0.9.RELEASE"
         // NOTE: Do not place your application dependencies here; they belong
