@@ -135,7 +135,8 @@ public class Hook {
             metadataReader = new AndroidMetadataReader(Class.forName(className));
         } catch (ClassNotFoundException e) {
             Log.e("AndroidMetadataReader", className + " not found");
-            throw new IOException(e);
+            //throw new IOException(e);
+            return defaultReader;
         } catch (NoClassDefFoundError error) {
             Log.d("AndroidMetadataReader", className + " def error");
             return defaultReader;
