@@ -10,10 +10,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfigurationEmbeddedTomcat;
 import org.springframework.cglib.core.ReflectUtils;
-import org.springframework.context.annotation.AndroidConfigurationClassPostProcessor;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
@@ -52,13 +50,13 @@ public class Hook {
     public void defineClass(){}
 
     //@Around("springApplicationRun()")//无cglib时启用
-    public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
-        Log.d("HOOK", joinPoint.getSignature().toString());
-        SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
-        Set<Object> sources = springApplication.getSources();
-        sources.add(AndroidConfigurationClassPostProcessor.class);
-        return joinPoint.proceed();
-    }
+//    public Object springApplicationRun(ProceedingJoinPoint joinPoint) throws Throwable {
+//        Log.d("HOOK", joinPoint.getSignature().toString());
+//        SpringApplication springApplication = (SpringApplication) joinPoint.getThis();
+//        Set<Object> sources = springApplication.getSources();
+//        sources.add(AndroidConfigurationClassPostProcessor.class);
+//        return joinPoint.proceed();
+//    }
 
     /**
      * {@link ClassPathScanningCandidateComponentProvider#findCandidateComponents}

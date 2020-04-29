@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.example.simple_web.Application;
+
 import org.springframework.boot.logging.LoggingSystem;
 
 import javax.management.MBeanServerFactory;
@@ -36,7 +38,7 @@ public class MyService extends Service {
         System.setProperty(LoggingSystem.SYSTEM_PROPERTY, LoggingSystem.NONE);
         // for org.apache.tomcat.util.modeler.Registry.getMBeanServer
         MBeanServerFactory.createMBeanServer();
-        DemoSpringBootApplication.main(new String[0]);
+        Application.main(new String[0]);
     }
 
     @Override
