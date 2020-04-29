@@ -63,9 +63,14 @@ dependencies {
 //    implementation "org.springframework:spring-context"
 //    implementation "org.springframework.boot:spring-boot-autoconfigure"
 //    implementation "org.springframework:spring-web"
+    // javax.annotation.PostConstruct ...
+    implementation "javax.annotation:jsr250-api:1.0"
     implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.23") {
+        // javax.persistence.PersistenceContext conflict with hibernate-jpa-2.1-api
+        // javax.annotation.PostConstruct conflict with jsr250-api
         exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
     }
+
     implementation 'org.javassist:javassist'
     implementation 'com.linkedin.dexmaker:dexmaker:2.25.1'
     implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
@@ -116,6 +121,7 @@ dependencies {
 
 configurations.all {
     exclude group:'org.aspectj', module:'aspectjrt'
+    exclude group: 'org.apache.tomcat', module: 'tomcat-annotations-api'
 }
 
 aspectjx {
