@@ -25,6 +25,8 @@
 -keep @interface ** {
     *;
 }
+-keepattributes MethodParameters
+-keepparameternames
 -keep class ** {
     *;
 }
