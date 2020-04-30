@@ -2,12 +2,17 @@
 Running SpringBoot in Android, turn Android device into a web server.
 Tested on Android 9
 
-![Screenshot](Screenshot_1587307289.png)
+![Screenshot](Screenshot_1588230665.png)
 
+*demo project placed in web module, which copied from https://github.com/Ryan-Miao/springboot-demo-gradle*
 
-### TODO:
-1. [AndroidConfigurationClassPostProcessor.java](app/src/main/java/org/springframework/context/annotation/AndroidConfigurationClassPostProcessor.java) Support CGLIB [<sup>1</sup>](https://github.com/zhangke3016/MethodInterceptProxy)
-2. Template engines not yet tested
+### Working:
+1. CGLIB
+2. Template engines
+3. Database
+
+### Not Working:
+1. Auto parameter name resolving not working, RequestParam and PathVariable annotations MUST provided parameter name in order to work.
 
 
 PS：not spring's `SpringBoot for android`
