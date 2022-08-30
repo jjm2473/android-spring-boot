@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -28,5 +29,11 @@ public class MainActivity extends AppCompatActivity {
 //                }.onCreate();
 //            }
 //        }.start();
+    }
+
+    public static Intent newInstance(@NonNull final Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        return intent;
     }
 }

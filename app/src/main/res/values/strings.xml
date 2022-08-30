@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">SpringBoot Application</string>
+    <string name="exit_http">Stop HTTP Server</string>
 </resources>
